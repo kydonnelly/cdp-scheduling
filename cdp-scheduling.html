@@ -1,0 +1,68 @@
+<!-- wp:paragraph -->
+<p>{{CODEschedulingsetup}}</p>
+
+<!-- /wp:paragraph -->
+<div id="instructions">
+  <h1>CDP Signature Gathering Shifts</h1>
+  <p><b>Instructions for new volunteers:</b> Thank you for volunteering! Please join any of the shifts below. Feel free to use just your initials or first name. Only CDP members can see your contact info when you sign up.</p>
+  <p><b>Leaders</b> are responsible for making sure their shiftmates have materials. If you don't have materials of your own, please join a shift with a leader. If you have materials of your own, join any shift that's open OR start a new shift with your time and location so others can join you!</p>
+</div>
+
+<!-- wp:paragraph -->
+<p>[cdp_scheduling]</p>
+<!-- /wp:paragraph -->
+
+<div id="loginInfo">
+<p>Sign in with Google to view past shifts:<br><button onclick="login_with_google()">Sign In</button></p>
+</div>
+
+<p>[cdp_shift_reports]</p>
+
+<!-- wp:paragraph -->
+<p>{{CODEschedulingsignin}}</p>
+<!-- /wp:paragraph -->
+
+<!-- CodeEmbed CODEschedulingsetup -->
+<script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.4.0/firebase-database.js"></script>
+<script>
+let firebaseConfig = {
+    apiKey: "YOUR_KEY_HERE",
+    authDomain: "YOUR_APP_NAME_HERE.firebaseapp.com",
+    databaseURL: "https://YOUR_APP_NAME_HERE.firebaseio.com",
+    projectId: "YOUR_APP_NAME_HERE",
+    storageBucket: "YOUR_APP_NAME_HERE.appspot.com",
+    messagingSenderId: "YOUR_ID_HERE",
+    appId: "YOUR_APP_ID_HERE"
+  };
+firebase.initializeApp(firebaseConfig);
+</script>
+
+<!-- CodeEmbed CODEschedulingsignin -->
+<script>
+document.getElementById("loginInfo").style.display = "none";
+document.getElementById("submitButton").hidden = true;
+
+firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    document.getElementById("loginInfo").style.display = "none";
+    document.getElementById("submitButton").hidden = false;
+  } else {
+    document.getElementById("loginInfo").style.display = "block";
+    document.getElementById("submitButton").hidden = true;
+  }
+});
+function login_with_google() {
+  let provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(function(result) {
+    var token = result.credential.accessToken;
+    var user = result.user;
+  }).catch(function(error) {
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    var email = error.email;
+    var credential = error.credential;
+  });
+}
+</script>
