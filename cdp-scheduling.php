@@ -16,7 +16,8 @@ define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time'
 
 function cdp_scheduling_code() {
   $today = cdp_nowtostr();
-  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE end_time > '$today' ORDER BY start_time ASC");
+  $two_weeks = date_format(date_add(cdp_strtotime($today), new DateInterval('P15D')), 'Y-m-d');
+  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE end_time > '$today' AND end_time < '$two_weeks' ORDER BY start_time ASC");
   cdp_echo_schedule_html($today, $schedule);
 }
 
@@ -26,21 +27,30 @@ function cdp_shift_reports_code() {
   cdp_echo_schedule_html($today, $schedule);
 }
 
-function cdp_echo_schedule_html($today, $schedule) {
+function cdp_partition_daily_shifts($today, $schedule) {
   $seconds_in_day = 60 * 60 * 24;
   $current_day = cdp_strtotime($today);
-  $daily_shifts = array_fill(0, 14, array());
+  $daily_shifts = array();
 
   // partition all the shift results into days
   foreach ($schedule as $shift_result) {
     $start_time = cdp_strtotime($shift_result->start_time);
     $interval = date_diff($start_time, $current_day);
     $days_apart = $interval->format('%R%a');
-    if ($days_apart >= 0 && $days_apart < 14) {
+
+    if (array_key_exists($days_apart, $daily_shifts)) {
       $daily_shifts[$days_apart] []= $shift_result;
+    } else {
+      $daily_shifts[$days_apart] = [$shift_result];
     }
   }
-  
+
+  return $daily_shifts;
+}
+
+function cdp_echo_schedule_html($today, $schedule) {
+  $daily_shifts = cdp_partition_daily_shifts($today, $schedule);
+
   echo '<table id="signup_table" style="width:100%" cellspacing="2" cellpadding="4">';
   echo '<tbody>';
   foreach ($daily_shifts as $day_offset => $daily_shift) {
@@ -55,12 +65,7 @@ function cdp_echo_schedule_html($today, $schedule) {
     // New shift cell
     echo '<td class="create-shift" data-col-index="0" data-row-index="' . $day_offset . '">';
     echo '</td>';
-    // echo '<td><button class="blue-btn" name="validate" onclick="validateId(this)" id="' . $result->voter_id . '">Mark</button></td>';
-    // echo '<td>' . $result->first_name . ' ' . $middle . $result->last_name . '</td>';
-    // echo '<td>' . $result->street_num . ' ' . $result->street . ' ' . $result->type . $apt . '</td>'; 
-    // echo '<td>' . $result->zip . '</td>';
-    // echo '<td>' . $result->birth_date . '</td>';
-    // echo '</tr>';
+    echo '</tr>';
   }
   echo '</tbody>';
   echo '</table>';
