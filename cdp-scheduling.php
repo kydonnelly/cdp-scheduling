@@ -89,7 +89,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     if ($is_future) {
       $locations = cdp_get_locations(LOCATION_COLUMNS, "");
 
-      echo '<td class="create-shift" data-col-index="0" data-row-index="' . $day_offset . '">';
+      echo '<td class="create-shift" width="312px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
       echo '<li>
       <label for="start_time_' . $day_offset . '">Time: </label>
