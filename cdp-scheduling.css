@@ -1,0 +1,49 @@
+.page-id-1294
+table {
+	margin: 0.5em 0 0 0;
+	border-collapse: separate;
+	border-spacing: 2px;
+}
+
+table th.row_header {
+	padding: 4px;
+	color: #fef8ec;
+	background-color: #003831;
+	font-weight: bold;
+	font-size: 1.2em;
+	text-align: center;
+	vertical-align: middle; 
+	-webkit-border-bottom-left-radius: 8px;
+	-webkit-border-top-left-radius: 8px; }
+
+table td {
+	padding: 5px;
+	vertical-align: bottom;
+}
+
+table td.create-shift {
+	background-color: #fef8ec;
+}
+
+table td.upcoming-shift {
+	background-color: #fefefe;
+}
+
+table ul {
+	margin: 2px 2px 2px 2px;
+	list-style: none;
+}
+
+table button {
+	margin: 2px;
+	padding: 4px 8px 4px 8px;
+	color: #fef8ec;
+	background-color: #003831;
+	border: none;
+	border-radius: 4px;
+	line-height: 1.2;
+}
+
+table ul.shift-info {
+	line-height: 1.5;
+}
