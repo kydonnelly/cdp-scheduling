@@ -82,7 +82,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     echo '<tr>';
 
     // Date header
-    echo '<th id="row_' . $period_offset . '" class="row_header" data-row-index="' . $day_offset . '" scope="row">' . $display_day . '</th>';
+    echo '<th id="row_' . $period_offset . '" class="row_header" width="128px" data-row-index="' . $day_offset . '" scope="row">' . $display_day . '</th>';
 
     // New shift cell
     if ($is_future) {
