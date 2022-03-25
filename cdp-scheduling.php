@@ -104,6 +104,14 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       }
       echo '</select>
       </li>';
+      echo '<li>
+      <label for="capacity_' . $day_offset . '">Capacity: </label>
+      <input id="capacity_' . $day_offset . '" class="capacity_field" size="8" maxlength="7" required="required" min="0" max="4" autocomplete="off" placeholder="0" type="number" name="capacity_field" />
+      </li>';
+      echo '<li>
+      <label for="notes_' . $day_offset . '">Notes: </label>
+      <input id="notes_' . $day_offset . '" class="notes_field" style="width:80%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
+      </li>';
       echo '<li class="create-button"><button class="create" name="create_' . $day_offset . '" onclick="createShift(this)">Create</button></li>';
       echo '</ul>';
       echo '</td>';

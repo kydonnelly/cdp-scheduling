@@ -59,6 +59,10 @@ table button.join {
 	padding: 8px 12px 7px 12px;
 }
 
+table ul.shift-create {
+	line-height: 2.5;
+}
+
 table ul.shift-info {
 	line-height: 1.5;
 }
