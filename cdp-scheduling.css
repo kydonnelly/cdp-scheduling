@@ -1,4 +1,11 @@
 .page-id-1294
+
+#contact_info input {
+	margin: 0.5em 0 0 0.5em;
+	padding: 4px;
+	border: 1px solid #e5ebea;
+}
+
 table {
 	margin: 0.5em 0 0 0;
 	border-collapse: separate;
@@ -17,8 +24,9 @@ table th.row_header {
 	-webkit-border-top-left-radius: 8px; }
 
 table td {
-	padding: 5px;
+	padding: 4px;
 	vertical-align: bottom;
+	border: 1px solid #e5ebea;
 }
 
 table td.create-shift {
@@ -36,12 +44,19 @@ table ul {
 
 table button {
 	margin: 2px;
-	padding: 4px 8px 4px 8px;
 	color: #fef8ec;
 	background-color: #003831;
 	border: none;
 	border-radius: 4px;
 	line-height: 1.2;
+}
+
+table button.create {
+	padding: 8px 12px 7px 12px;
+}
+
+table button.join {
+	padding: 8px 12px 7px 12px;
 }
 
 table ul.shift-info {
