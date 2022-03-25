@@ -11,6 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 # database column names, must match cdp_echo_results_html()
+define("LOCATION_COLUMNS", ['name', 'quality', 'capacity']);
 define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity']);
 define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
 
@@ -86,8 +87,23 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
     // New shift cell
     if ($is_future) {
+      $locations = cdp_get_locations(LOCATION_COLUMNS, "");
+
       echo '<td class="create-shift" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
+      echo '<li>
+      <label for="start_time_' . $day_offset . '">Time: </label>
+      <input type="time" id="start_time_' . $day_offset . '" name="start_time" step="900" required> - <input type="time" id="end_time_' . $day_offset . '" name="end_time" step="900" required>
+      </li>';
+      echo '<li>
+      <label for="create_location_' . $day_offset . '">Location: </label>
+      <select id="create_location_' . $day_offset . '" class="location_field" required="required" name="location_field">
+      <option value="none">Choose...</option>';
+      foreach ($locations as $location) {
+        echo '<option value="' . $location->name . '">' . cdp_location_quality_emoji($location) . ' ' . $location->name . ' - ' . $location->capacity . '</option>';
+      }
+      echo '</select>
+      </li>';
       echo '<li class="create-button"><button class="create" name="create_' . $day_offset . '" onclick="createShift(this)">Create</button></li>';
       echo '</ul>';
       echo '</td>';
@@ -152,6 +168,23 @@ function cdp_get_query_results($columns, $query) {
   $table_name = $wpdb->prefix . "shifts_2022";
   $query = "SELECT " . implode(', ', $columns) . " from $table_name $query;";
   return $wpdb->get_results($query);
+}
+
+function cdp_get_locations($columns, $query) {
+  global $wpdb;
+  $table_name = $wpdb->prefix . "gathering_locations";
+  $query = "SELECT " . implode(', ', $columns) . " from $table_name $query;";
+  return $wpdb->get_results($query);
+}
+
+function cdp_location_quality_emoji($location) {
+  switch (intval($location->quality)) {
+    case 0: return '&#x26AA';  // gray circle
+    case 1: return '&#x1F534'; // red circle
+    case 2: return '&#x1F7E0'; // orange circle
+    case 3: return '&#x1F7E1'; // yellow circle
+    case 4: return '&#x1F7E2'; // green circle
+  }
 }
 
 function cdp_nowtostr() {
