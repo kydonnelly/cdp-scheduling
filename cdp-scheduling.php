@@ -15,20 +15,32 @@ define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 
 define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
 
 function cdp_scheduling_code() {
+  $days_to_show = 14;
+  $future_period = new DateInterval('P' . $days_to_show . 'D');
+
   $today = cdp_nowtostr();
-  $two_weeks = date_format(date_add(cdp_strtotime($today), new DateInterval('P15D')), 'Y-m-d');
-  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE end_time > '$today' AND end_time < '$two_weeks' ORDER BY start_time ASC");
-  cdp_echo_schedule_html($today, $schedule);
+  $future = date_format(date_add(cdp_strtotime($today), $future_period), 'Y-m-d');
+  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE end_time > '$today' AND end_time < '$future' ORDER BY start_time ASC");
+
+  $daily_shifts = cdp_partition_daily_shifts($today, $schedule);
+  for ($i = 0; $i < $days_to_show; $i++) {
+    if (!array_key_exists($i, $daily_shifts)) {
+      $daily_shifts[$i] = array();
+    }
+  }
+
+  cdp_echo_schedule_html($today, $daily_shifts);
 }
 
 function cdp_shift_reports_code() {
   $today = cdp_nowtostr();
   $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE $end_time <= '$today' ORDER BY end_time DESC");
-  cdp_echo_schedule_html($today, $schedule);
+  $daily_shifts = cdp_partition_daily_shifts($today, $schedule);
+
+  cdp_echo_schedule_html($today, $daily_shifts);
 }
 
 function cdp_partition_daily_shifts($today, $schedule) {
-  $seconds_in_day = 60 * 60 * 24;
   $current_day = cdp_strtotime($today);
   $daily_shifts = array();
 
@@ -48,15 +60,18 @@ function cdp_partition_daily_shifts($today, $schedule) {
   return $daily_shifts;
 }
 
-function cdp_echo_schedule_html($today, $schedule) {
-  $daily_shifts = cdp_partition_daily_shifts($today, $schedule);
+function cdp_echo_schedule_html($today, $daily_shifts) {
+  $current_day = cdp_strtotime($today);
 
   echo '<table id="signup_table" style="width:100%" cellspacing="2" cellpadding="4">';
   echo '<tbody>';
   foreach ($daily_shifts as $day_offset => $daily_shift) {
     $period_offset = 'P' . $day_offset . 'D';
-    $shift_day = date_add($current_day, new DateInterval($period_offset));
+    $date_offset = new DateInterval($period_offset);
+    $shift_day = date_add($current_day, $date_offset);
     $display_day = date_format($shift_day, 'l m/d/Y');
+    date_sub($current_day, $date_offset); // need to undo the above line
+    
     echo '<tr>';
 
     // Date header
