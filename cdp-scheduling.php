@@ -87,7 +87,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
     // New shift cell
     if ($is_future) {
-      $locations = cdp_get_locations(LOCATION_COLUMNS, "");
+      $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
 
       echo '<td class="create-shift" width="312px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
@@ -100,7 +100,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       <select id="create_location_' . $day_offset . '" class="location_field" required="required" name="location_field">
       <option value="none">Choose...</option>';
       foreach ($locations as $location) {
-        echo '<option value="' . $location->name . '">' . cdp_location_quality_emoji($location) . ' ' . $location->name . ' - ' . $location->capacity . '</option>';
+        echo '<option value="' . $location->name . '">' . ' ' . $location->name . ' ' . cdp_location_quality_emoji($location) . '</option>';
       }
       echo '</select>
       </li>';
