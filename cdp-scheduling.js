@@ -23,19 +23,24 @@ jQuery(document).ready( function() {
     } else {
       jQuery.ajax({
         type: "POST",
+        url: cdpAjax.ajaxURL,
         dataType: "json",
-        url: "cdp-join-shift.php",
-        data: { action: "cdp_user_join_shift",
-                shift_id: shift_id,
-                name: name,
-                phone: phone,
-                nonce: nonce },
+        data: {
+          action: "cdp_join_shift",
+          shift_id: shift_id,
+          name: name,
+          phone: phone,
+          nonce: nonce
+        },
         success: function(response) {
           if (response.type == "success") {
-            alert("success")
+            alert(response.shift_id)
           } else {
             alert(response.error_reason)
           }
+        },
+        error: function(error) {
+          alert(error.responseText)
         }
       })
     }
@@ -87,25 +92,30 @@ jQuery(document).ready( function() {
     } else {
       jQuery.ajax({
         type: "POST",
+        url: cdpAjax.ajaxURL,
         dataType: "json",
-        url: "cdp-create-shift.php",
-        data: { action: "cdp_user_create_shift",
-                date: date,
-                day_id: day_offset,
-                name: name,
-                phone: phone,
-                start_time: start_time,
-                end_time: end_time,
-                location: location_name,
-                capacity: capacity,
-                notes: notes,
-                nonce: nonce },
+        data: {
+          action: "cdp_create_shift",
+          date: date,
+          day_id: day_offset,
+          name: name,
+          phone: phone,
+          start_time: start_time,
+          end_time: end_time,
+          location: location_name,
+          capacity: capacity,
+          notes: notes,
+          nonce: nonce
+        },
         success: function(response) {
           if (response.type == "success") {
             alert("success")
           } else {
             alert(response.error_reason)
           }
+        },
+        error: function(error) {
+          alert(error.responseText)
         }
       })
     }

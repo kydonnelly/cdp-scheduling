@@ -63,8 +63,8 @@ function cdp_partition_daily_schedule($today, $schedule) {
 
 function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   $current_day = cdp_strtotime($today);
-  $join_nonce = wp_create_nonce("cdp_user_join_shift_nonce");
-  $create_nonce = wp_create_nonce("cdp_user_create_shift_nonce");
+  $join_nonce = wp_create_nonce("cdp_join_shift_nonce");
+  $create_nonce = wp_create_nonce("cdp_create_shift_nonce");
 
   echo '<div id="contact_info">
   <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
@@ -91,7 +91,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     // New shift cell
     if ($is_future) {
       $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
-      $create_shift_link = admin_url('admin-ajax.php?action=cdp_user_create_shift&day_id=' . $day_offset . '&date=' . $db_date_string . '&nonce=' . $create_nonce);
+      $create_shift_link = admin_url('admin-ajax.php?action=cdp_create_shift&day_id=' . $day_offset . '&date=' . $db_date_string . '&nonce=' . $create_nonce);
 
       echo '<td class="create-shift" width="276px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
@@ -138,7 +138,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
       // Join button
       if ($is_future && intval($daily_shift->capacity) > 1) {
-        $join_shift_link = admin_url('admin-ajax.php?action=cdp_user_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
+        $join_shift_link = admin_url('admin-ajax.php?action=cdp_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
         echo '<ul class="shift-join">';
         echo '<li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</button></li>';
         echo '</ul>';
@@ -225,11 +225,76 @@ function cdp_strtotime($timestring) {
 function cdp_setup_ajax() {
   // https://www.smashingmagazine.com/2011/10/how-to-use-ajax-in-wordpress/
   wp_register_script( 'cdp_scheduling', WP_PLUGIN_URL . '/cdp-scheduling/cdp-scheduling.js', array('jquery') );
+  wp_localize_script( 'cdp_scheduling', 'cdpAjax', array( 'ajaxURL' => admin_url( 'admin-ajax.php' )));     
+
   wp_enqueue_script( 'jquery' );
   wp_enqueue_script( 'cdp_scheduling' );
 }
 
+function cdp_join_shift() {
+  if (!wp_verify_nonce($_REQUEST['nonce'], "cdp_join_shift_nonce")) {
+    exit("Not authorized to join shift");
+  }
+
+  $result = array();
+
+  if (!isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"])) {
+    $result['type'] = "error";
+    $result['error_reason'] = "Missing required fields";
+    echo json_encode($result);
+    die();
+  }
+
+  $shift_id = $_REQUEST["shift_id"];
+  $name = $_REQUEST["name"];
+  $phone = $_REQUEST["phone"];
+
+  if (strlen($name) <= 0 || strlen($phone) <= 0) {
+    $result['type'] = "error";
+    $result['error_reason'] = "Empty required fields";
+    echo json_encode($result);
+    die();
+  }
+
+  $result['type'] = "success";
+  $result['shift_id'] = $shift_id;
+
+  if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    echo json_encode($result);
+  } else {
+    header("Location: " . $_SERVER["HTTP_REFERER"]);
+  }
+
+  die();
+}
+
+function cdp_create_shift() {
+  if (!wp_verify_nonce($_REQUEST['nonce'], "cdp_create_shift_nonce")) {
+    exit("Not authorized to create shift");
+  }
+
+  $result = array();
+
+  $day_offset = $_REQUEST["day_id"];
+  $date_string = $_REQUEST["date"];
+
+  $result['type'] = "success";
+  $result['date'] = $date_string;
+
+  if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    echo json_encode($result);
+  } else {
+    header("Location: " . $_SERVER["HTTP_REFERER"]);
+  }
+
+  die();
+}
+
 add_action( 'init', 'cdp_setup_ajax' );
+add_action( 'wp_ajax_cdp_join_shift', "cdp_join_shift" );
+add_action( 'wp_ajax_cdp_create_shift', "cdp_create_shift" );
+add_action( 'wp_ajax_nopriv_cdp_join_shift', "cdp_join_shift" );
+add_action( 'wp_ajax_nopriv_cdp_create_shift', "cdp_create_shift" );
 
 // SHORTCODE
 
