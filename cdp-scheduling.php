@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 
 # database column names, must match cdp_echo_results_html()
 define("LOCATION_COLUMNS", ['name', 'quality', 'capacity']);
-define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity']);
+define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'notes']);
 define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
 
 function cdp_scheduling_code() {
@@ -65,7 +65,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   $current_day = cdp_strtotime($today);
 
   echo '<div id="contact_info">
-  <p><label for="contact_phone">Name (public) and phone number (private): </label><br />
+  <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
   <input id="contact_name" class="name_field" size="48" maxlength="127" required="required" autocomplete="on" placeholder="Name" type="text" name="name_field" />    
   <input id="contact_phone" class="phone_field" size="24" maxlength="15" required="required" autocomplete="on" placeholder="510-555-9160" type="tel" name="phone_field" /></p>
   </div>';
@@ -89,7 +89,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     if ($is_future) {
       $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
 
-      echo '<td class="create-shift" width="312px" data-col-index="0" data-row-index="' . $day_offset . '">';
+      echo '<td class="create-shift" width="256px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
       echo '<li>
       <label for="start_time_' . $day_offset . '">Time: </label>
@@ -97,7 +97,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       </li>';
       echo '<li>
       <label for="create_location_' . $day_offset . '">Location: </label>
-      <select id="create_location_' . $day_offset . '" class="location_field" required="required" name="location_field">
+      <select id="create_location_' . $day_offset . '" class="location_field" style="width:67%" required="required" name="location_field">
       <option value="none">Choose...</option>';
       foreach ($locations as $location) {
         echo '<option value="' . $location->name . '">' . ' ' . $location->name . ' ' . cdp_location_quality_emoji($location) . '</option>';
@@ -110,7 +110,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       </li>';
       echo '<li>
       <label for="notes_' . $day_offset . '">Notes: </label>
-      <input id="notes_' . $day_offset . '" class="notes_field" style="width:80%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
+      <input id="notes_' . $day_offset . '" class="notes_field" style="width:75%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
       </li>';
       echo '<li class="create-button"><button class="create" name="create_' . $day_offset . '" onclick="createShift(this)">Create</button></li>';
       echo '</ul>';
@@ -127,6 +127,9 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '<li class="shift-gatherer"><span class="name">' . $daily_shift->gatherer . '</span></li>';
       echo '<li class="shift-location"><span class="name">' . $daily_shift->location . '</span></li>';
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
+      if (strlen($daily_shift->notes) > 0) {
+        echo '<li class="shift-notes"><span class="name">' . $daily_shift->notes . '</span></li>';
+      }
       echo '</ul>';
 
       // Join button
