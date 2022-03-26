@@ -42,15 +42,12 @@ firebase.initializeApp(firebaseConfig);
 <!-- CodeEmbed CODEschedulingsignin -->
 <script>
 document.getElementById("loginInfo").style.display = "none";
-document.getElementById("submitButton").hidden = true;
 
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     document.getElementById("loginInfo").style.display = "none";
-    document.getElementById("submitButton").hidden = false;
   } else {
     document.getElementById("loginInfo").style.display = "block";
-    document.getElementById("submitButton").hidden = true;
   }
 });
 function login_with_google() {
