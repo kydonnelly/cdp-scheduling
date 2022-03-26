@@ -4,23 +4,41 @@ jQuery(document).ready( function() {
 
     nonce = jQuery(this).attr("data-nonce")
     shift_id = jQuery(this).attr("data-shift_id")
-    alert(nonce)
+    
+    let name_field = document.getElementById('contact_name');
+    let phone_field = document.getElementById('contact_phone');
 
-    jQuery.ajax({
-      type: "POST",
-      dataType: "json",
-      url: "cdp-join-shift.php",
-      data: { action: "cdp_user_join_shift",
-              shift_id: shift_id,
-              nonce: nonce },
-      success: function(response) {
-        if (response.type == "success") {
-          alert("success")
-        } else {
-          alert(response.error_reason)
+    let name = name_field.value;
+    let phone = phone_field.value;
+
+    // required fields
+    if (name === "") {
+      name_field.select();
+      name_field.scrollIntoView({block: "center"});
+      alert("Please enter your name.");
+    } else if (phone === "") {
+      phone_field.select();
+      phone_field.scrollIntoView({block: "center"});
+      alert("Please enter your phone number in case a volunteer needs to contact you.");
+    } else {
+      jQuery.ajax({
+        type: "POST",
+        dataType: "json",
+        url: "cdp-join-shift.php",
+        data: { action: "cdp_user_join_shift",
+                shift_id: shift_id,
+                name: name,
+                phone: phone,
+                nonce: nonce },
+        success: function(response) {
+          if (response.type == "success") {
+            alert("success")
+          } else {
+            alert(response.error_reason)
+          }
         }
-      }
-    })
+      })
+    }
   })
 
   jQuery(".create").click( function(event) {

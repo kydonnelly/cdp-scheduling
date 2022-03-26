@@ -1,6 +1,8 @@
 <?php
 header('Content-Type: application/json');
 
+defined( 'ABSPATH' ) || exit;
+
 if (!wp_verify_nonce($_REQUEST['nonce'], "cdp_user_join_shift_nonce")) {
   exit("Not authorized to join shift");
 }
