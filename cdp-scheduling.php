@@ -63,6 +63,8 @@ function cdp_partition_daily_schedule($today, $schedule) {
 
 function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   $current_day = cdp_strtotime($today);
+  $join_nonce = wp_create_nonce("cdp_user_join_shift_nonce");
+  $create_nonce = wp_create_nonce("cdp_user_create_shift_nonce");
 
   echo '<div id="contact_info">
   <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
@@ -89,6 +91,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     // New shift cell
     if ($is_future) {
       $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
+      $create_shift_link = admin_url('admin-ajax.php?action=cdp_user_create_shift&day_id=' . $day_offset . '&date=' . $db_date_string . '&nonce=' . $create_nonce);
 
       echo '<td class="create-shift" width="276px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
@@ -113,7 +116,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       <label for="notes_' . $day_offset . '">Notes: </label>
       <input id="notes_' . $day_offset . '" class="notes_field" style="width:75%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
       </li>';
-      echo '<li class="create-button"><button class="create" id="' . $day_offset . '" name="' . $db_date_string . '" onclick="createShift(this)">Create</button></li>';
+      echo '<li class="create-button"><a class="create" id="' . $day_offset . '" data-nonce="' . $create_nonce . '" data-date="' . $db_date_string . '" data-day_id="' . $day_offset . '" href="' . $create_shift_link . '">Create</a></li>';
       echo '</ul>';
       echo '</td>';
     }
@@ -134,9 +137,10 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '</ul>';
 
       // Join button
-      if (intval($daily_shift->capacity) > 1) {
+      if ($is_future && intval($daily_shift->capacity) > 1) {
+        $join_shift_link = admin_url('admin-ajax.php?action=cdp_user_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
         echo '<ul class="shift-join">';
-        echo '<li class="join-button"><button class="join" id="' . $daily_shift->shift_id . '" name="join_' . $daily_shift->shift_id . '" onclick="joinShift(this)">Join</button></li>';
+        echo '<li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</button></li>';
         echo '</ul>';
       }
       echo '</td>';
@@ -175,6 +179,8 @@ function cdp_join_shift_code() {
   echo '</form>';
 }
 
+// DATABASE
+
 function cdp_get_query_results($columns, $query) {
   global $wpdb;
   $table_name = $wpdb->prefix . "shifts_2022";
@@ -199,6 +205,8 @@ function cdp_location_quality_emoji($location) {
   }
 }
 
+// TIME
+
 function cdp_nowtostr() {
   $timezone = new DateTimeZone('America/Los_Angeles');
   $today = new DateTime("now", $timezone);
@@ -211,6 +219,19 @@ function cdp_strtotime($timestring) {
   $date = new DateTime($timestring, $timezone);
   return $date;
 }
+
+// AJAX
+
+function cdp_setup_ajax() {
+  // https://www.smashingmagazine.com/2011/10/how-to-use-ajax-in-wordpress/
+  wp_register_script( 'cdp_scheduling', WP_PLUGIN_URL . '/cdp-scheduling/cdp-scheduling.js', array('jquery') );
+  wp_enqueue_script( 'jquery' );
+  wp_enqueue_script( 'cdp_scheduling' );
+}
+
+add_action( 'init', 'cdp_setup_ajax' );
+
+// SHORTCODE
 
 function sc_cdp_scheduling() {
   // wordpress entry point

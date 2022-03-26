@@ -42,7 +42,7 @@ table ul {
 	list-style: none;
 }
 
-table button {
+table a {
 	margin: 2px;
 	color: #fef8ec;
 	background-color: #003831;
@@ -51,14 +51,20 @@ table button {
 	line-height: 1.2;
 }
 
-table button.create {
+a.create {
 	margin-top: 4px;
 	padding: 8px 12px 7px 12px;
+	-webkit-appearance: button;
+    -moz-appearance: button;
+    text-decoration: none;
 }
 
-table button.join {
+a.join {
 	margin-top: 8px;
 	padding: 8px 12px 7px 12px;
+	-webkit-appearance: button;
+    -moz-appearance: button;
+    text-decoration: none;
 }
 
 table ul.shift-create {
