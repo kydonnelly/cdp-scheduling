@@ -78,6 +78,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     $date_offset = new DateInterval($period_offset);
     $shift_day = date_add($current_day, $date_offset);
     $display_day = date_format($shift_day, 'l m/d/Y');
+    $db_date_string = date_format($shift_day, 'Y-m-d');
     date_sub($current_day, $date_offset); // need to undo the above line
 
     echo '<tr>';
@@ -89,7 +90,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     if ($is_future) {
       $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
 
-      echo '<td class="create-shift" width="256px" data-col-index="0" data-row-index="' . $day_offset . '">';
+      echo '<td class="create-shift" width="276px" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
       echo '<li>
       <label for="start_time_' . $day_offset . '">Time: </label>
@@ -112,7 +113,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       <label for="notes_' . $day_offset . '">Notes: </label>
       <input id="notes_' . $day_offset . '" class="notes_field" style="width:75%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
       </li>';
-      echo '<li class="create-button"><button class="create" name="create_' . $day_offset . '" onclick="createShift(this)">Create</button></li>';
+      echo '<li class="create-button"><button class="create" id="' . $day_offset . '" name="' . $db_date_string . '" onclick="createShift(this)">Create</button></li>';
       echo '</ul>';
       echo '</td>';
     }
@@ -135,7 +136,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       // Join button
       if (intval($daily_shift->capacity) > 1) {
         echo '<ul class="shift-join">';
-        echo '<li class="join-button"><button class="join" name="join_' . $daily_shift->shift_id . '" onclick="joinShift(this)">Join</button></li>';
+        echo '<li class="join-button"><button class="join" id="' . $daily_shift->shift_id . '" name="join_' . $daily_shift->shift_id . '" onclick="joinShift(this)">Join</button></li>';
         echo '</ul>';
       }
       echo '</td>';
