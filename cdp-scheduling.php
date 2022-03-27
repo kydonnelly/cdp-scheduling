@@ -25,12 +25,7 @@ function cdp_scheduling_code() {
   $future = date_format(date_add(cdp_strtotime($today), $future_period), 'Y-m-d');
   $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE parent_id IS NULL AND end_time > '$today' AND end_time < '$future' ORDER BY start_time ASC");
 
-  $daily_schedule = cdp_partition_daily_schedule($today, $schedule);
-  for ($i = 0; $i < $days_to_show; $i++) {
-    if (!array_key_exists($i, $daily_schedule)) {
-      $daily_schedule[$i] = array();
-    }
-  }
+  $daily_schedule = cdp_partition_daily_schedule($today, $schedule, $days_to_show);
 
   echo '<div id="contact_info">
   <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
@@ -49,9 +44,16 @@ function cdp_shift_reports_code() {
   cdp_echo_schedule_html($today, $daily_schedule, false);
 }
 
-function cdp_partition_daily_schedule($today, $schedule) {
+function cdp_partition_daily_schedule($today, $schedule, $min_rows = 0) {
   $current_day = cdp_strtotime($today);
   $daily_schedule = array();
+
+  // Pad out the minimum number of days
+  for ($i = 0; $i < $min_rows; $i++) {
+    if (!array_key_exists($i, $daily_schedule)) {
+      $daily_schedule[$i] = array();
+    }
+  }
 
   // partition all the shift results into days
   foreach ($schedule as $shift_result) {
