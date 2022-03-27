@@ -32,6 +32,12 @@ function cdp_scheduling_code() {
     }
   }
 
+  echo '<div id="contact_info">
+  <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
+  <input id="contact_name" class="name_field" size="48" maxlength="127" required="required" autocomplete="on" placeholder="Name" type="text" name="name_field" />    
+  <input id="contact_phone" class="phone_field" size="24" maxlength="15" required="required" autocomplete="on" placeholder="510-555-9160" type="tel" name="phone_field" /></p>
+  </div>';
+
   cdp_echo_schedule_html($today, $daily_schedule, true);
 }
 
@@ -70,12 +76,6 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   $current_day = cdp_strtotime($today);
   $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
   $location_map = array_combine(array_map(function($l) { return $l->location_id; }, $locations), $locations);
-
-  echo '<div id="contact_info">
-  <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
-  <input id="contact_name" class="name_field" size="48" maxlength="127" required="required" autocomplete="on" placeholder="Name" type="text" name="name_field" />    
-  <input id="contact_phone" class="phone_field" size="24" maxlength="15" required="required" autocomplete="on" placeholder="510-555-9160" type="tel" name="phone_field" /></p>
-  </div>';
 
   $table_id = $is_future ? 'schedule_table' : 'reports_table';
   echo '<table id="' . $table_id . '" style="width:100%" cellspacing="2" cellpadding="4">';
