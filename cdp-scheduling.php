@@ -12,8 +12,10 @@ defined( 'ABSPATH' ) || exit;
 
 # database column names, must match cdp_echo_results_html()
 define("LOCATION_COLUMNS", ['location_id', 'name', 'quality', 'capacity']);
-define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location_id', 'start_time', 'end_time', 'cancelled', 'capacity', 'notes']);
+define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location_id', 'start_time', 'end_time', 'capacity', 'cancelled', 'notes']);
 define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location_id', 'start_time', 'end_time', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
+
+define("JOIN_SHIFT_COLUMNS", ['gatherer', 'location_id', 'start_time', 'end_time', 'capacity']);
 
 function cdp_scheduling_code() {
   $days_to_show = 14;
@@ -142,6 +144,9 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
       echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">' . $bottomliner . '</span></li>';
+      foreach ($joiners as $joiner) {
+        echo '<li class="shift-gatherer"><span class="name">' . $joiner . '</span></li>';
+      }
       if ($is_future && !$is_full) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
@@ -217,6 +222,28 @@ function cdp_get_locations($columns, $query) {
   return $wpdb->get_results($query);
 }
 
+function cdp_submit_join_shift($shift_id, $name, $phone) {
+  $parent_shifts = cdp_get_query_results(JOIN_SHIFT_COLUMNS, "WHERE shift_id = $shift_id");
+  if (count($parent_shifts) != 1) {
+    return false;
+  }
+  $parent_shift = $parent_shifts[0];
+
+  $insertions = array('parent_id' => $shift_id,
+    'gatherer' => $name,
+    'contact' => $phone,
+    'location_id' => $parent_shift->location_id,
+    'start_time' => $parent_shift->start_time,
+    'end_time' => $parent_shift->end_time,
+    'capacity' => $parent_shift->capacity,
+    'cancelled' => 0);
+
+  global $wpdb;
+  $table_name = $wpdb->prefix . "shifts_2022";
+  $success = $wpdb->insert($table_name, $insertions);
+  return $success;
+}
+
 function cdp_location_quality_emoji($location) {
   switch (intval($location->quality)) {
     case 0: return '&#x26AA';  // gray circle
@@ -262,7 +289,7 @@ function cdp_join_shift() {
 
   if (!isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"])) {
     $result['type'] = "error";
-    $result['error_reason'] = "Missing required fields";
+    $result['error_reason'] = "Missing required fields.";
     echo json_encode($result);
     die();
   }
@@ -273,7 +300,15 @@ function cdp_join_shift() {
 
   if (strlen($name) <= 0 || strlen($phone) <= 0) {
     $result['type'] = "error";
-    $result['error_reason'] = "Empty required fields";
+    $result['error_reason'] = "Empty required fields.";
+    echo json_encode($result);
+    die();
+  }
+
+  $success = cdp_submit_join_shift($shift_id, $name, $phone);
+  if (!$success) {
+    $result['type'] = "error";
+    $result['error_reason'] = "Could not update database.";
     echo json_encode($result);
     die();
   }
