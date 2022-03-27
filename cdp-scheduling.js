@@ -82,7 +82,7 @@ jQuery(document).ready( function() {
     let phone = phone_field.value;
     let start_time = start_time_field.value;
     let end_time = end_time_field.value;
-    let location_name = location_selector.value;
+    let location_id = location_selector.value;
     let capacity = capacity_field.value;
     let notes = notes_field.value;
 
@@ -103,7 +103,7 @@ jQuery(document).ready( function() {
       end_time_field.select();
       end_time_field.scrollIntoView({block: "center"});
       alert("Please enter an end time.");
-    } else if (location_name === "" || location_name == "none") {
+    } else if (location_id === "" || location_id == "none") {
       location_selector.scrollIntoView({block: "center"});
       alert("Please enter a location.");
     } else {
@@ -112,19 +112,21 @@ jQuery(document).ready( function() {
       create_button.hidden = true
       creating_button.hidden = false
 
+      let start_date = date.concat(" ").concat(start_time)
+      let end_date = date.concat(" ").concat(end_time)
+
       jQuery.ajax({
         type: "POST",
         url: cdpAjax.ajaxURL,
         dataType: "json",
         data: {
           action: "cdp_create_shift",
-          date: date,
           day_id: day_offset,
           name: name,
           phone: phone,
-          start_time: start_time,
-          end_time: end_time,
-          location: location_name,
+          start_time: start_date,
+          end_time: end_date,
+          location: location_id,
           capacity: capacity,
           notes: notes,
           nonce: nonce
@@ -134,6 +136,11 @@ jQuery(document).ready( function() {
           creating_button.hidden = true
           if (response.type == "success") {
             alert("success")
+            start_time_field.value = ""
+            end_time_field.value = ""
+            location_selector.value = "none"
+            capacity_field.value = ""
+            notes_field.value = ""
           } else {
             alert(response.error_reason)
           }

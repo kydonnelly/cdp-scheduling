@@ -108,7 +108,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       <select id="create_location_' . $day_offset . '" class="location_field" style="width:67%" required="required" name="location_field">
       <option value="none">Choose...</option>';
       foreach ($locations as $location) {
-        echo '<option value="' . $location->name . '">' . ' ' . $location->name . ' ' . cdp_location_quality_emoji($location) . '</option>';
+        echo '<option value="' . $location->location_id . '">' . ' ' . $location->name . ' ' . cdp_location_quality_emoji($location) . '</option>';
       }
       echo '</select>
       </li>';
@@ -244,6 +244,26 @@ function cdp_submit_join_shift($shift_id, $name, $phone) {
   return $success;
 }
 
+function cdp_submit_create_shift($shift_id, $params) {
+  $insertions = array(
+    'gatherer' => $params['name'],
+    'contact' => $params['phone'],
+    'location_id' => intval($params['location']),
+    'start_time' => $params['start_time'],
+    'end_time' => $params['end_time'],
+    'capacity' => intval($params['capacity']),
+    'cancelled' => 0
+  );
+  if (isset($params['notes']) && strlen($params['notes']) > 0) {
+    $insertions['notes'] = $params['notes'];
+  }
+
+  global $wpdb;
+  $table_name = $wpdb->prefix . "shifts_2022";
+  $success = $wpdb->insert($table_name, $insertions);
+  return $success;
+}
+
 function cdp_location_quality_emoji($location) {
   switch (intval($location->quality)) {
     case 0: return '&#x26AA';  // gray circle
@@ -331,13 +351,26 @@ function cdp_create_shift() {
     exit("Not authorized to create shift");
   }
 
-  $result = array();
+  $keys = ["name", "phone", "start_time", "end_time", "location", "capacity", "notes"];
+  foreach ($keys as $key) {
+    if (!isset($_REQUEST[$key])) {
+      $result['type'] = "error";
+      $result['error_reason'] = "Missing required field $key.";
+      echo json_encode($result);
+      die();
+    }
+  }
 
-  $day_offset = $_REQUEST["day_id"];
-  $date_string = $_REQUEST["date"];
+  $params = array_combine($keys, array_map(function($k) { return $_REQUEST[$k]; }, $keys));
+  $success = cdp_submit_create_shift($shift_id, $params);
+  if (!$success) {
+    $result['type'] = "error";
+    $result['error_reason'] = "Could not update database.";
+    echo json_encode($result);
+    die();
+  }
 
   $result['type'] = "success";
-  $result['date'] = $date_string;
 
   if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     echo json_encode($result);
