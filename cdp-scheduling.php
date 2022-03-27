@@ -126,10 +126,14 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     foreach ($daily_shifts as $shift_index => $daily_shift) {
       $start_time = date_format(date_create($daily_shift->start_time), 'h:i A');
       $end_time = date_format(date_create($daily_shift->end_time), 'h:i A');
+      $is_full = intval($daily_shift->capacity) <= 1;
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
       echo '<li class="shift-gatherer"><span class="name" id="gatherers_' . $daily_shift->shift_id . '">' . $daily_shift->gatherer . '</span></li>';
+      if ($is_future && !$is_full) {
+        echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
+      }
       echo '<li class="shift-location"><span class="name">' . $daily_shift->location . '</span></li>';
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
       if (strlen($daily_shift->notes) > 0) {
@@ -139,7 +143,6 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
       // Join status
       if ($is_future) {
-        $is_full = intval($daily_shift->capacity) <= 1;
         $join_shift_link = admin_url('admin-ajax.php?action=cdp_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
         echo '<ul class="shift-join" id="join_' . $daily_shift->shift_id . '" ' . ($is_full ? 'hidden' : '') . '>
         <li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</a></li>

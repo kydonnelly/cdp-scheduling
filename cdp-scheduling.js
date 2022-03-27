@@ -39,14 +39,17 @@ jQuery(document).ready( function() {
           nonce: nonce
         },
         success: function(response) {
-          full_label.hidden = false
           joining_button.hidden = true
           if (response.type == "success") {
+            full_label.hidden = false
             let updated_name = response.name
-            let label_id = "#gatherers_".concat(shift_id)
-            jQuery(label_id).html(updated_name)
-            alert(response.shift_id)
+            let joiner_id = "#joiner_".concat(shift_id)
+            let joiner_container = document.getElementById("shift_joiner_".concat(shift_id))
+            jQuery(joiner_id).html(updated_name)
+            joiner_container.hidden = false
           } else {
+            join_button.hidden = false
+            console.log(response.error_reason)
             alert(response.error_reason)
           }
         },
