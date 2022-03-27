@@ -67,6 +67,16 @@ a.join {
     text-decoration: none;
 }
 
+a.loading {
+	margin-top: 8px;
+	padding: 8px 12px 7px 12px;
+	-webkit-appearance: button;
+    -moz-appearance: button;
+    text-decoration: none;
+	color: #000000;
+	background-color: #C7C7C7;
+}
+
 table ul.shift-create {
 	line-height: 2.5;
 }

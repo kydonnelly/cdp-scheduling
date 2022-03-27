@@ -21,6 +21,12 @@ jQuery(document).ready( function() {
       phone_field.scrollIntoView({block: "center"});
       alert("Please enter your phone number in case a volunteer needs to contact you.");
     } else {
+      let full_label = document.getElementById("full_".concat(shift_id));
+      let join_button = document.getElementById("join_".concat(shift_id));
+      let joining_button = document.getElementById("joining_".concat(shift_id));
+      join_button.hidden = true
+      joining_button.hidden = false
+
       jQuery.ajax({
         type: "POST",
         url: cdpAjax.ajaxURL,
@@ -33,14 +39,22 @@ jQuery(document).ready( function() {
           nonce: nonce
         },
         success: function(response) {
+          full_label.hidden = false
+          joining_button.hidden = true
           if (response.type == "success") {
+            let updated_name = response.name
+            let label_id = "#gatherers_".concat(shift_id)
+            jQuery(label_id).html(updated_name)
             alert(response.shift_id)
           } else {
             alert(response.error_reason)
           }
         },
         error: function(error) {
+          join_button.hidden = false
+          joining_button.hidden = true
           alert(error.responseText)
+          console.log(error);
         }
       })
     }
@@ -90,6 +104,11 @@ jQuery(document).ready( function() {
       location_selector.scrollIntoView({block: "center"});
       alert("Please enter a location.");
     } else {
+      let create_button = document.getElementById("create_".concat(day_offset));
+      let creating_button = document.getElementById("creating_".concat(day_offset));
+      create_button.hidden = true
+      creating_button.hidden = false
+
       jQuery.ajax({
         type: "POST",
         url: cdpAjax.ajaxURL,
@@ -108,6 +127,8 @@ jQuery(document).ready( function() {
           nonce: nonce
         },
         success: function(response) {
+          create_button.hidden = false
+          creating_button.hidden = true
           if (response.type == "success") {
             alert("success")
           } else {
@@ -115,7 +136,10 @@ jQuery(document).ready( function() {
           }
         },
         error: function(error) {
+          create_button.hidden = false
+          creating_button.hidden = true
           alert(error.responseText)
+          console.log(error);
         }
       })
     }

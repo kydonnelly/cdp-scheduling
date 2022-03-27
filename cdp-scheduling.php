@@ -116,7 +116,8 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       <label for="notes_' . $day_offset . '">Notes: </label>
       <input id="notes_' . $day_offset . '" class="notes_field" style="width:75%" maxlength="255" autocomplete="off" placeholder="optional" type="text" name="notes_field" />
       </li>';
-      echo '<li class="create-button"><a class="create" id="' . $day_offset . '" data-nonce="' . $create_nonce . '" data-date="' . $db_date_string . '" data-day_id="' . $day_offset . '" href="' . $create_shift_link . '">Create</a></li>';
+      echo '<li class="create-button" id="create_' . $day_offset . '"><a class="create" id="' . $day_offset . '" data-nonce="' . $create_nonce . '" data-date="' . $db_date_string . '" data-day_id="' . $day_offset . '" href="' . $create_shift_link . '">Create</a></li>';
+      echo '<li class="loading-button" id="creating_' . $day_offset . '" hidden><a class="loading">Creating...</a></li>';
       echo '</ul>';
       echo '</td>';
     }
@@ -128,7 +129,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
-      echo '<li class="shift-gatherer"><span class="name">' . $daily_shift->gatherer . '</span></li>';
+      echo '<li class="shift-gatherer"><span class="name" id="gatherers_' . $daily_shift->shift_id . '">' . $daily_shift->gatherer . '</span></li>';
       echo '<li class="shift-location"><span class="name">' . $daily_shift->location . '</span></li>';
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
       if (strlen($daily_shift->notes) > 0) {
@@ -136,12 +137,19 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       }
       echo '</ul>';
 
-      // Join button
-      if ($is_future && intval($daily_shift->capacity) > 1) {
+      // Join status
+      if ($is_future) {
+        $is_full = intval($daily_shift->capacity) <= 1;
         $join_shift_link = admin_url('admin-ajax.php?action=cdp_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
-        echo '<ul class="shift-join">';
-        echo '<li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</button></li>';
-        echo '</ul>';
+        echo '<ul class="shift-join" id="join_' . $daily_shift->shift_id . '" ' . ($is_full ? 'hidden' : '') . '>
+        <li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</a></li>
+        </ul>';
+        echo '<ul class="shift-joining" id="joining_' . $daily_shift->shift_id . '" hidden>
+        <li class="loading-button"><a class="loading">Joining...</a></li>
+        </ul>';
+        echo '<ul class="shift-join" id="full_' . $daily_shift->shift_id . '" ' . ($is_full ? '' : 'hidden') . '>
+        <li class="shift-filled"><span class="join" id="' . $daily_shift->shift_id . '">Full</span></li>
+        </ul>';
       }
       echo '</td>';
     }
@@ -258,6 +266,7 @@ function cdp_join_shift() {
 
   $result['type'] = "success";
   $result['shift_id'] = $shift_id;
+  $result['name'] = $name;
 
   if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     echo json_encode($result);
