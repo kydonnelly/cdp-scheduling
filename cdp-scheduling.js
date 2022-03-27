@@ -42,10 +42,9 @@ jQuery(document).ready( function() {
           joining_button.hidden = true
           if (response.type == "success") {
             full_label.hidden = false
-            let updated_name = response.name
             let joiner_id = "#joiner_".concat(shift_id)
             let joiner_container = document.getElementById("shift_joiner_".concat(shift_id))
-            jQuery(joiner_id).html(updated_name)
+            jQuery(joiner_id).html(name)
             joiner_container.hidden = false
           } else {
             join_button.hidden = false
@@ -135,12 +134,17 @@ jQuery(document).ready( function() {
           create_button.hidden = false
           creating_button.hidden = true
           if (response.type == "success") {
-            alert("success")
             start_time_field.value = ""
             end_time_field.value = ""
             location_selector.value = "none"
             capacity_field.value = ""
             notes_field.value = ""
+
+            jQuery("#placeholder_bottomliner_".concat(day_offset)).html(name)
+            jQuery("#placeholder_location_".concat(day_offset)).html(location_id)
+            jQuery("#placeholder_time_".concat(day_offset)).html(start_time.concat(" - ").concat(end_time))
+            jQuery("#placeholder_notes_".concat(day_offset)).html(notes)
+            document.getElementById("placeholder_create_".concat(day_offset)).hidden = false
           } else {
             alert(response.error_reason)
           }

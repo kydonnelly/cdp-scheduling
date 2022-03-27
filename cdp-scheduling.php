@@ -125,6 +125,16 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '<li class="loading-button" id="creating_' . $day_offset . '" hidden><a class="loading">Creating...</a></li>';
       echo '</ul>';
       echo '</td>';
+
+      // Create shift placeholder
+      echo '<td class="upcoming-shift" id="placeholder_create_' . $day_offset . '" data-col-index="0" data-row-index="' . $day_offset . '" hidden>
+      <ul class="shift-info">
+      <li class="shift-gatherer"><span class="name" id="placeholder_bottomliner_' . $day_offset . '">NAME</span></li>
+      <li class="shift-location"><span class="name" id="placeholder_location_' . $day_offset . '">LOCATION</span></li>
+      <li class="shift-timestamp"><span class="name" id="placeholder_time_' . $day_offset . '">START - END</span></li>
+      <li class="shift-notes"><span class="name" id="placeholder_notes_' . $day_offset . '">NOTES</span></li>
+      <li><span class="name">Saved! Thank you for singing up &#x2705 Refresh the page to dismiss this message.</span></li>
+      </ul></td>';
     }
 
     // Existing shifts
@@ -336,9 +346,6 @@ function cdp_join_shift() {
   }
 
   $result['type'] = "success";
-  $result['shift_id'] = $shift_id;
-  $result['name'] = $name;
-
   if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     echo json_encode($result);
   } else {
@@ -373,7 +380,6 @@ function cdp_create_shift() {
   }
 
   $result['type'] = "success";
-
   if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     echo json_encode($result);
   } else {
