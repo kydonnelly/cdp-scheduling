@@ -129,11 +129,19 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       $start_time = date_format(date_create($daily_shift->start_time), 'h:i A');
       $end_time = date_format(date_create($daily_shift->end_time), 'h:i A');
       $location = $location_map[$daily_shift->location_id];
-      $is_full = intval($daily_shift->capacity) <= 1;
+      $bottomliner_count = $daily_shift->cancelled ? 0 : 1;
+      $bottomliner = ($daily_shift->cancelled ? '<s>' : '') . $daily_shift->gatherer . ($daily_shift->cancelled ? '</s>' : '');
+
+      $joiners = array();
+      if ($is_future) {
+        $children = cdp_get_query_results(['gatherer'], "WHERE parent_id = $daily_shift->shift_id AND cancelled = 0 ORDER BY shift_id ASC");
+        $joiners = array_map(function($c) { return $c->gatherer; }, $children);
+      }
+      $is_full = count($joiners) + $bottomliner_count >= intval($daily_shift->capacity);
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
-      echo '<li class="shift-gatherer"><span class="name" id="gatherers_' . $daily_shift->shift_id . '">' . $daily_shift->gatherer . '</span></li>';
+      echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">' . $bottomliner . '</span></li>';
       if ($is_future && !$is_full) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
