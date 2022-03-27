@@ -11,9 +11,9 @@
 defined( 'ABSPATH' ) || exit;
 
 # database column names, must match cdp_echo_results_html()
-define("LOCATION_COLUMNS", ['name', 'quality', 'capacity']);
-define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'notes']);
-define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location', 'start_time', 'end_time', 'is_bottomliner', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
+define("LOCATION_COLUMNS", ['location_id', 'name', 'quality', 'capacity']);
+define("SCHEDULING_COLUMNS", ['shift_id', 'gatherer', 'location_id', 'start_time', 'end_time', 'cancelled', 'capacity', 'notes']);
+define("SHIFT_REPORT_COLUMNS", ['shift_id', 'gatherer', 'location_id', 'start_time', 'end_time', 'capacity', 'raw_signatures', 'validated_signatures', 'notes']);
 
 function cdp_scheduling_code() {
   $days_to_show = 14;
@@ -21,7 +21,7 @@ function cdp_scheduling_code() {
 
   $today = cdp_nowtostr();
   $future = date_format(date_add(cdp_strtotime($today), $future_period), 'Y-m-d');
-  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE end_time > '$today' AND end_time < '$future' ORDER BY start_time ASC");
+  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE parent_id IS NULL AND end_time > '$today' AND end_time < '$future' ORDER BY start_time ASC");
 
   $daily_schedule = cdp_partition_daily_schedule($today, $schedule);
   for ($i = 0; $i < $days_to_show; $i++) {
@@ -35,7 +35,7 @@ function cdp_scheduling_code() {
 
 function cdp_shift_reports_code() {
   $today = cdp_nowtostr();
-  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE $end_time <= '$today' ORDER BY end_time DESC");
+  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE cancelled = 0 AND $end_time <= '$today' ORDER BY end_time DESC");
   $daily_schedule = cdp_partition_daily_schedule($today, $schedule);
 
   cdp_echo_schedule_html($today, $daily_schedule, false);
@@ -62,9 +62,12 @@ function cdp_partition_daily_schedule($today, $schedule) {
 }
 
 function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
-  $current_day = cdp_strtotime($today);
   $join_nonce = wp_create_nonce("cdp_join_shift_nonce");
   $create_nonce = wp_create_nonce("cdp_create_shift_nonce");
+
+  $current_day = cdp_strtotime($today);
+  $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
+  $location_map = array_combine(array_map(function($l) { return $l->location_id; }, $locations), $locations);
 
   echo '<div id="contact_info">
   <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
@@ -90,7 +93,6 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
     // New shift cell
     if ($is_future) {
-      $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
       $create_shift_link = admin_url('admin-ajax.php?action=cdp_create_shift&day_id=' . $day_offset . '&date=' . $db_date_string . '&nonce=' . $create_nonce);
 
       echo '<td class="create-shift" width="276px" data-col-index="0" data-row-index="' . $day_offset . '">';
@@ -126,6 +128,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     foreach ($daily_shifts as $shift_index => $daily_shift) {
       $start_time = date_format(date_create($daily_shift->start_time), 'h:i A');
       $end_time = date_format(date_create($daily_shift->end_time), 'h:i A');
+      $location = $location_map[$daily_shift->location_id];
       $is_full = intval($daily_shift->capacity) <= 1;
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
@@ -134,7 +137,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       if ($is_future && !$is_full) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
-      echo '<li class="shift-location"><span class="name">' . $daily_shift->location . '</span></li>';
+      echo '<li class="shift-location"><span class="name">' . $location->name . '</span></li>';
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
       if (strlen($daily_shift->notes) > 0) {
         echo '<li class="shift-notes"><span class="name">' . $daily_shift->notes . '</span></li>';
