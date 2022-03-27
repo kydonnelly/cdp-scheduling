@@ -139,7 +139,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
         $children = cdp_get_query_results(['gatherer'], "WHERE parent_id = $daily_shift->shift_id AND cancelled = 0 ORDER BY shift_id ASC");
         $joiners = array_map(function($c) { return $c->gatherer; }, $children);
       }
-      $is_full = count($joiners) + $bottomliner_count >= intval($daily_shift->capacity);
+      $can_join = $daily_shift->capacity == 0 || count($joiners) + $bottomliner_count < $daily_shift->capacity;
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
@@ -147,7 +147,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       foreach ($joiners as $joiner) {
         echo '<li class="shift-gatherer"><span class="name">' . $joiner . '</span></li>';
       }
-      if ($is_future && !$is_full) {
+      if ($is_future && $can_join) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
       echo '<li class="shift-location"><span class="name">' . $location->name . '</span></li>';
@@ -160,13 +160,13 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       // Join status
       if ($is_future) {
         $join_shift_link = admin_url('admin-ajax.php?action=cdp_join_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $join_nonce);
-        echo '<ul class="shift-join" id="join_' . $daily_shift->shift_id . '" ' . ($is_full ? 'hidden' : '') . '>
+        echo '<ul class="shift-join" id="join_' . $daily_shift->shift_id . '" ' . ($can_join ? '' : 'hidden') . '>
         <li class="join-button"><a class="join" id="' . $daily_shift->shift_id . '" data-nonce="' . $join_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" href="' . $join_shift_link . '">Join</a></li>
         </ul>';
         echo '<ul class="shift-joining" id="joining_' . $daily_shift->shift_id . '" hidden>
         <li class="loading-button"><a class="loading">Joining...</a></li>
         </ul>';
-        echo '<ul class="shift-join" id="full_' . $daily_shift->shift_id . '" ' . ($is_full ? '' : 'hidden') . '>
+        echo '<ul class="shift-join" id="full_' . $daily_shift->shift_id . '" ' . ($can_join ? 'hidden' : '') . '>
         <li class="shift-filled"><span class="join" id="' . $daily_shift->shift_id . '">Full</span></li>
         </ul>';
       }
