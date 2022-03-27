@@ -92,13 +92,13 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
     echo '<tr>';
 
     // Date header
-    echo '<th id="row_' . $period_offset . '" class="row_header" width="128" data-row-index="' . $day_offset . '" scope="row">' . $display_day . '</th>';
+    echo '<th id="row_' . $period_offset . '" class="row_header" data-row-index="' . $day_offset . '" scope="row">' . $display_day . '</th>';
 
     // New shift cell
     if ($is_future) {
       $create_shift_link = admin_url('admin-ajax.php?action=cdp_create_shift&day_id=' . $day_offset . '&date=' . $db_date_string . '&nonce=' . $create_nonce);
 
-      echo '<td class="create-shift" width="276" data-col-index="0" data-row-index="' . $day_offset . '">';
+      echo '<td class="create-shift" data-col-index="0" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-create">';
       echo '<li>
       <label for="start_time_' . $day_offset . '">Time: </label>
@@ -142,7 +142,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       }
       $can_join = $daily_shift->capacity == 0 || count($joiners) + $bottomliner_count < $daily_shift->capacity;
 
-      echo '<td class="upcoming-shift" width="192" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
+      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
       echo '<ul class="shift-info">';
       echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">' . $bottomliner . '</span></li>';
       foreach ($joiners as $joiner) {

@@ -14,6 +14,7 @@ table {
 
 table th.row_header {
 	padding: 4px;
+	width: 128px;
 	color: #fef8ec;
 	background-color: #003831;
 	font-weight: bold;
@@ -30,10 +31,12 @@ table td {
 }
 
 table td.create-shift {
+	width: 276px;
 	background-color: #fef8ec;
 }
 
 table td.upcoming-shift {
+	width: 176px;
 	background-color: #fefefe;
 }
 
