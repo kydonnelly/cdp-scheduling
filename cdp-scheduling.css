@@ -54,6 +54,11 @@ table a {
 	line-height: 1.2;
 }
 
+table a:visited {
+	color: #fef8ec;
+	background-color: #003831;
+}
+
 a.create {
 	margin-top: 4px;
 	padding: 8px 12px 7px 12px;
