@@ -38,8 +38,10 @@ function cdp_scheduling_code() {
 
 function cdp_shift_reports_code() {
   $today = cdp_nowtostr();
-  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE cancelled = 0 AND $end_time <= '$today' ORDER BY end_time DESC");
+  $schedule = cdp_get_query_results(SCHEDULING_COLUMNS, "WHERE cancelled = 0 AND end_time <= '$today' ORDER BY end_time DESC");
   $daily_schedule = cdp_partition_daily_schedule($today, $schedule);
+
+  echo '<h1>Past Shift Reports</h1>';
 
   cdp_echo_schedule_html($today, $daily_schedule, false);
 }
