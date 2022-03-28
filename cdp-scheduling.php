@@ -28,7 +28,7 @@ function cdp_scheduling_code() {
   $daily_schedule = cdp_partition_daily_schedule($today, $schedule, $days_to_show);
 
   echo '<div id="contact_info">
-  <p><label for="contact_phone">* Name (public) and phone number (private): </label><br />
+  <p><label for="contact_phone">*Required: name (public) and phone number (private): </label><br />
   <input id="contact_name" class="name_field" size="48" maxlength="127" required="required" autocomplete="on" placeholder="Name" type="text" name="name_field" />    
   <input id="contact_phone" class="phone_field" size="24" maxlength="15" required="required" autocomplete="on" placeholder="510-555-9160" type="tel" name="phone_field" /></p>
   </div>';
@@ -156,7 +156,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">';
       echo '<ul class="shift-info">';
-      echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">' . $bottomliner . '</span></li>';
+      echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">Leader: ' . $bottomliner . '</span></li>';
       foreach ($joiners as $joiner) {
         echo '<li class="shift-gatherer"><span class="name">' . $joiner . '</span></li>';
       }
