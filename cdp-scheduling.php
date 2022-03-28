@@ -358,7 +358,7 @@ function cdp_join_shift() {
 
   $result = array();
 
-  if (!isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"]) || !isset($_REQUEST["shift_id"])) {
+  if (!isset($_REQUEST["shift_id"]) || !isset($_REQUEST["name"]) || !isset($_REQUEST["phone"])) {
     $result['type'] = "error";
     $result['error_reason'] = "Missing required fields.";
     echo json_encode($result);
