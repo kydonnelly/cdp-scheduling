@@ -170,10 +170,10 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       foreach ($joiners as $joiner) {
         if ($joiner->cancelled) {
           // strikethrough
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>' . $joiner->gatherer . '</s></span></li>';
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>Joined by ' . $joiner->gatherer . '</s></span></li>';
         } else {
           // with cancel button
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">Joined by ' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
         }
       }
       if ($is_future && $can_join) {
