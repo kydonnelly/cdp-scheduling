@@ -13,10 +13,11 @@ jQuery(document).ready( function() {
 
     // required fields
     if (name === "") {
+      name_field.placeholder = "Name (required)";
       name_field.select();
       name_field.scrollIntoView({block: "center"});
-      alert("Please enter your name.");
     } else if (phone === "") {
+      phone_field.placeholder = "Phone number (required)";
       phone_field.select();
       phone_field.scrollIntoView({block: "center"});
       alert("Please enter your phone number in case a volunteer needs to contact you.");
@@ -87,10 +88,11 @@ jQuery(document).ready( function() {
 
     // required fields
     if (name === "") {
+      name_field.placeholder = "Name (required)";
       name_field.select();
       name_field.scrollIntoView({block: "center"});
-      alert("Please enter your name.");
     } else if (phone === "") {
+      phone_field.placeholder = "Phone number (required)";
       phone_field.select();
       phone_field.scrollIntoView({block: "center"});
       alert("Please enter your phone number in case a volunteer needs to contact you.");
