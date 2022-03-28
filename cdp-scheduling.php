@@ -129,7 +129,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '</td>';
 
       // Create shift placeholder
-      echo '<td class="upcoming-shift" id="placeholder_create_' . $day_offset . '" data-col-index="0" data-row-index="' . $day_offset . '" hidden>
+      echo '<td class="upcoming-shift" id="placeholder_create_' . $day_offset . '" data-col-index="0" data-row-index="' . $day_offset . '" style="background-color: #FEFEFE" hidden>
       <ul class="shift-info">
       <li class="shift-gatherer"><span class="name" id="placeholder_bottomliner_' . $day_offset . '">NAME</span></li>
       <li class="shift-location"><span class="name" id="placeholder_location_' . $day_offset . '">LOCATION</span></li>
@@ -154,7 +154,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       }
       $can_join = $daily_shift->capacity == 0 || count($joiners) + $bottomliner_count < $daily_shift->capacity;
 
-      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '">';
+      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">';
       echo '<ul class="shift-info">';
       echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">' . $bottomliner . '</span></li>';
       foreach ($joiners as $joiner) {
@@ -285,6 +285,16 @@ function cdp_location_quality_emoji($location) {
     case 2: return '&#x1F7E0'; // orange circle
     case 3: return '&#x1F7E1'; // yellow circle
     case 4: return '&#x1F7E2'; // green circle
+  }
+}
+
+function cdp_location_quality_hex($location) {
+  switch (intval($location->quality)) {
+    case 0: return '#FEFEFE';  // gray
+    case 1: return '#F27D8B'; // faded red
+    case 2: return '#F48C66'; // orange salmon
+    case 3: return '#F6D78D'; // pale yellow
+    case 4: return '#AEC2B1'; // soft green
   }
 }
 
