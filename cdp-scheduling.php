@@ -153,7 +153,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
 
       $bottomliner_count = $daily_shift->cancelled ? 0 : 1;
       $joiners_count = count( array_filter($joiners, function ($j) { return $j->cancelled != 1; }) );
-      $can_join = $daily_shift->capacity == 0 || $active_joiners + $bottomliner_count < $daily_shift->capacity;
+      $can_join = $daily_shift->capacity == 0 || $joiners_count + $bottomliner_count < $daily_shift->capacity;
 
       echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">
       <ul class="shift-info">';
