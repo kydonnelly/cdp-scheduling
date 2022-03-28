@@ -160,4 +160,36 @@ jQuery(document).ready( function() {
       })
     }
   })
+
+  jQuery(".cancel-shift").click( function(event) {
+    event.preventDefault();
+
+    nonce = jQuery(this).attr("data-nonce")
+    shift_id = jQuery(this).attr("data-shift_id")
+
+    jQuery.ajax({
+      type: "POST",
+      url: cdpAjax.ajaxURL,
+      dataType: "json",
+      data: {
+        action: "cdp_cancel_shift",
+        shift_id: shift_id,
+        nonce: nonce
+      },
+      success: function(response) {
+        if (response.type == "success") {
+          let gatherer_id = "#gatherer_".concat(shift_id)
+          jQuery(gatherer_id).html('CANCELLED')
+        } else {
+          console.log(response.error_reason)
+          alert(response.error_reason)
+        }
+      },
+      error: function(error) {
+        alert(error.responseText)
+        console.log(error);
+      }
+    })
+  })
+
 })

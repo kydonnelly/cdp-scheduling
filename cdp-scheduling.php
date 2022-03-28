@@ -74,6 +74,7 @@ function cdp_partition_daily_schedule($today, $schedule, $min_rows = 0) {
 function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   $join_nonce = wp_create_nonce("cdp_join_shift_nonce");
   $create_nonce = wp_create_nonce("cdp_create_shift_nonce");
+  $cancel_nonce = wp_create_nonce("cdp_cancel_shift_nonce");
 
   $current_day = cdp_strtotime($today);
   $locations = cdp_get_locations(LOCATION_COLUMNS, "ORDER BY name");
@@ -144,25 +145,42 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       $start_time = date_format(date_create($daily_shift->start_time), 'h:i A');
       $end_time = date_format(date_create($daily_shift->end_time), 'h:i A');
       $location = $location_map[$daily_shift->location_id];
-      $bottomliner_count = $daily_shift->cancelled ? 0 : 1;
-      $bottomliner = ($daily_shift->cancelled ? '<s>' : '') . $daily_shift->gatherer . ($daily_shift->cancelled ? '</s>' : '');
 
       $joiners = array();
       if ($is_future) {
-        $children = cdp_get_query_results(['gatherer'], "WHERE parent_id = $daily_shift->shift_id AND cancelled = 0 ORDER BY shift_id ASC");
-        $joiners = array_map(function($c) { return $c->gatherer; }, $children);
+        $joiners = cdp_get_query_results(['shift_id', 'gatherer', 'cancelled'], "WHERE parent_id = $daily_shift->shift_id ORDER BY shift_id ASC");
       }
-      $can_join = $daily_shift->capacity == 0 || count($joiners) + $bottomliner_count < $daily_shift->capacity;
 
-      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">';
-      echo '<ul class="shift-info">';
-      echo '<li class="shift-gatherer"><span class="name" id="bottomliner_' . $daily_shift->shift_id . '">Leader: ' . $bottomliner . '</span></li>';
+      $bottomliner_count = $daily_shift->cancelled ? 0 : 1;
+      $joiners_count = count( array_filter($joiners, function ($j) { return $j->cancelled != 1; }) );
+      $can_join = $daily_shift->capacity == 0 || $active_joiners + $bottomliner_count < $daily_shift->capacity;
+
+      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">
+      <ul class="shift-info">';
+
+      // Gatherers
+      if ($daily_shift->cancelled) {
+        // strikethrough
+        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><s>Leader: ' . $daily_shift->gatherer . '</s></span></li>';
+      } else {
+        // with cancel button
+        $cancel_shift_link = admin_url('admin-ajax.php?action=cdp_cancel_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $cancel_nonce);
+        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '">Leader: ' . $daily_shift->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $daily_shift->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $daily_shift->shift_id . '">x</a></li>';
+      }
       foreach ($joiners as $joiner) {
-        echo '<li class="shift-gatherer"><span class="name">' . $joiner . '</span></li>';
+        if ($joiner->cancelled) {
+          // strikethrough
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>' . $joiner->gatherer . '</s></span></li>';
+        } else {
+          // with cancel button
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
+        }
       }
       if ($is_future && $can_join) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
+
+      // Shift info
       echo '<li class="shift-location"><span class="name">' . $location->name . '</span></li>';
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
       if (strlen($daily_shift->notes) > 0) {
@@ -276,6 +294,15 @@ function cdp_submit_create_shift($shift_id, $params) {
   $table_name = $wpdb->prefix . "shifts_2022";
   $success = $wpdb->insert($table_name, $insertions);
   return $success;
+}
+
+function cdp_submit_cancel_shift($shift_id) {
+  $where = array('shift_id' => intval($shift_id));
+  $update = array('cancelled' => true);
+  global $wpdb;
+  $table_name = $wpdb->prefix . "shifts_2022";
+  $result = $wpdb->update($table_name, $update, $where);
+  return $result == 1;
 }
 
 function cdp_location_quality_emoji($location) {
@@ -401,11 +428,48 @@ function cdp_create_shift() {
   die();
 }
 
+function cdp_cancel_shift() {
+  if (!wp_verify_nonce($_REQUEST['nonce'], "cdp_cancel_shift_nonce")) {
+    exit("Not authorized to cancel shift");
+  }
+
+  $result = array();
+
+  if (!isset($_REQUEST["shift_id"])) {
+    $result['type'] = "error";
+    $result['error_reason'] = "Missing required fields.";
+    echo json_encode($result);
+    die();
+  }
+
+  $shift_id = $_REQUEST["shift_id"];
+
+  $success = cdp_submit_cancel_shift($shift_id);
+  if (!$success) {
+    $result['type'] = "error";
+    global $wpdb;
+    $result['error_reason'] = "Could not cancel the shift.";
+    echo json_encode($result);
+    die();
+  }
+
+  $result['type'] = "success";
+  if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    echo json_encode($result);
+  } else {
+    header("Location: " . $_SERVER["HTTP_REFERER"]);
+  }
+
+  die();
+}
+
 add_action( 'init', 'cdp_setup_ajax' );
 add_action( 'wp_ajax_cdp_join_shift', "cdp_join_shift" );
 add_action( 'wp_ajax_cdp_create_shift', "cdp_create_shift" );
+add_action( 'wp_ajax_cdp_cancel_shift', "cdp_cancel_shift" );
 add_action( 'wp_ajax_nopriv_cdp_join_shift', "cdp_join_shift" );
 add_action( 'wp_ajax_nopriv_cdp_create_shift', "cdp_create_shift" );
+add_action( 'wp_ajax_nopriv_cdp_cancel_shift', "cdp_cancel_shift" );
 
 // SHORTCODE
 

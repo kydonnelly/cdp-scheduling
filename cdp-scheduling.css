@@ -92,3 +92,14 @@ table ul.shift-create {
 table ul.shift-info {
 	line-height: 1.5;
 }
+
+li .cancel-shift {
+	display: none;
+  float: right;
+	color: #CC142A;
+	background-color: transparent;
+}
+
+.shift-gatherer:hover .cancel-shift {
+	display: inline;
+}
