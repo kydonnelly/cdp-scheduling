@@ -28,7 +28,7 @@ function cdp_scheduling_code() {
   $daily_schedule = cdp_partition_daily_schedule($today, $schedule, $days_to_show);
 
   echo '<div id="contact_info">
-  <p><label for="contact_phone">*Required: name (public) and phone number (private): </label><br />
+  <p><label for="contact_phone"><b>*Required:</b> name (public) and phone number (private): </label><br />
   <input id="contact_name" class="name_field" size="48" maxlength="127" required="required" autocomplete="on" placeholder="Name" type="text" name="name_field" />    
   <input id="contact_phone" class="phone_field" size="24" maxlength="15" required="required" autocomplete="on" placeholder="510-555-9160" type="tel" name="phone_field" /></p>
   </div>';
