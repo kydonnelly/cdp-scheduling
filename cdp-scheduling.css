@@ -93,6 +93,10 @@ table ul.shift-info {
 	line-height: 1.5;
 }
 
+table li.shift-notes {
+	padding: 8px 0 8px 0;
+}
+
 li .cancel-shift {
 	display: none;
   float: right;

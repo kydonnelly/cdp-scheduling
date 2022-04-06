@@ -157,36 +157,38 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       $joiners_count = count( array_filter($joiners, function ($j) { return $j->cancelled != 1; }) );
       $can_join = $daily_shift->capacity == 0 || $joiners_count + $bottomliner_count < $daily_shift->capacity;
 
-      echo '<td class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">
+      echo '<td id="' . $daily_shift->start_time . '" class="upcoming-shift" data-col-index="' . ($shift_index + 1) . '" data-row-index="' . $day_offset . '" style="background-color: ' . cdp_location_quality_hex($location) . ';">
       <ul class="shift-info">';
+
+      // Location + Time
+      echo '<li class="shift-location"><span class="name"><b>' . $location->name . '</b></span></li>';
+      echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
 
       // Gatherers
       if ($daily_shift->cancelled) {
         // strikethrough
-        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><s>Leader: ' . $daily_shift->gatherer . '</s></span></li>';
+        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><s><b>Leader: </b>' . $daily_shift->gatherer . '</s></span></li>';
       } else {
         // with cancel button
         $cancel_shift_link = admin_url('admin-ajax.php?action=cdp_cancel_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $cancel_nonce);
-        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '">Leader: ' . $daily_shift->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $daily_shift->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $daily_shift->shift_id . '">x</a></li>';
+        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><b>Leader: </b>' . $daily_shift->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $daily_shift->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $daily_shift->shift_id . '">x</a></li>';
       }
       foreach ($joiners as $joiner) {
         if ($joiner->cancelled) {
           // strikethrough
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>Joined by ' . $joiner->gatherer . '</s></span></li>';
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>joined by ' . $joiner->gatherer . '</s></span></li>';
         } else {
           // with cancel button
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">Joined by ' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
+          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">joined by ' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
         }
       }
       if ($is_future && $can_join) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
       }
 
-      // Shift info
-      echo '<li class="shift-location"><span class="name">' . $location->name . '</span></li>';
-      echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
+      // Notes
       if (strlen($daily_shift->notes) > 0) {
-        echo '<li class="shift-notes"><span class="name">' . $daily_shift->notes . '</span></li>';
+        echo '<li class="shift-notes"><span class="notes"><i>' . $daily_shift->notes . '</i></span></li>';
       }
       echo '</ul>';
 
