@@ -200,7 +200,7 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
         <li class="loading-button"><a class="loading">Joining...</a></li>
         </ul>';
         echo '<ul class="shift-join" id="full_' . $daily_shift->shift_id . '" ' . ($can_join ? 'hidden' : '') . '>
-        <li class="shift-filled"><span class="join" id="' . $daily_shift->shift_id . '">Full</span></li>
+        <li class="shift-filled"><span class="full" id="' . $daily_shift->shift_id . '">&#x2728 Full &#x2728</span></li>
         </ul>';
       }
       echo '</td>';
