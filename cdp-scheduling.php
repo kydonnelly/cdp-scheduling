@@ -165,22 +165,21 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
       echo '<li class="shift-timestamp"><span class="name">' . $start_time . ' - ' . $end_time . '</span></li>';
 
       // Gatherers
+      $cancel_shift_link = admin_url('admin-ajax.php?action=cdp_cancel_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $cancel_nonce);
+      $leader_text = '<b>Leader: </b>' . $daily_shift->gatherer;
       if ($daily_shift->cancelled) {
         // strikethrough
-        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><s><b>Leader: </b>' . $daily_shift->gatherer . '</s></span></li>';
-      } else {
-        // with cancel button
-        $cancel_shift_link = admin_url('admin-ajax.php?action=cdp_cancel_shift&shift_id=' . $daily_shift->shift_id . '&nonce=' . $cancel_nonce);
-        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '"><b>Leader: </b>' . $daily_shift->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $daily_shift->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $daily_shift->shift_id . '">x</a></li>';
+        $leader_text = '<s>' . $leader_text . '</s>';
       }
+      echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $daily_shift->shift_id . '">' . $leader_text . '</span><a class="cancel-shift" id="cancel_"' . $daily_shift->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $daily_shift->shift_id . '" data-is_cancelled="' . strval($daily_shift->cancelled) . '" data-gatherer_name="' . $daily_shift->gatherer . '">x</a></li>';
+
       foreach ($joiners as $joiner) {
+        $joiner_text = 'joined by ' . $joiner->gatherer;
         if ($joiner->cancelled) {
           // strikethrough
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '"><s>joined by ' . $joiner->gatherer . '</s></span></li>';
-        } else {
-          // with cancel button
-          echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">joined by ' . $joiner->gatherer . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '">x</a></li>';
+          $joiner_text = '<s>' . $joiner_text . '</s>';
         }
+        echo '<li class="shift-gatherer"><span class="name" id="gatherer_' . $joiner->shift_id . '">' . $joiner_text . '</span><a class="cancel-shift" id="cancel_"' . $joiner->shift_id . ' href="' . $cancel_shift_link . '" data-nonce="' . $cancel_nonce . '" data-shift_id="' . $joiner->shift_id . '" data-is_cancelled="' . strval($joiner->cancelled) . '" data-gatherer_name="' . $joiner->gatherer . '">x</a></li>';
       }
       if ($is_future && $can_join) {
         echo '<li class="shift-gatherer" id="shift_joiner_' . $daily_shift->shift_id . '" hidden><span class="name" id="joiner_' . $daily_shift->shift_id . '">PLACEHOLDER</span></li>';
@@ -300,9 +299,12 @@ function cdp_submit_create_shift($shift_id, $params) {
   return $success;
 }
 
-function cdp_submit_cancel_shift($shift_id) {
-  $where = array('shift_id' => intval($shift_id));
-  $update = array('cancelled' => true);
+function cdp_submit_cancel_shift($shift_id, $was_cancelled) {
+  $is_cancelled = intval($was_cancelled) == 0;
+
+  $where = array('shift_id' => intval($shift_id),
+                 'cancelled' => $is_cancelled == 0);
+  $update = array('cancelled' => $is_cancelled);
   global $wpdb;
   $table_name = $wpdb->prefix . "shifts_2022";
   $result = $wpdb->update($table_name, $update, $where);
@@ -439,7 +441,7 @@ function cdp_cancel_shift() {
 
   $result = array();
 
-  if (!isset($_REQUEST["shift_id"])) {
+  if (!isset($_REQUEST["shift_id"]) || !isset($_REQUEST["is_cancelled"])) {
     $result['type'] = "error";
     $result['error_reason'] = "Missing required fields.";
     echo json_encode($result);
@@ -447,12 +449,17 @@ function cdp_cancel_shift() {
   }
 
   $shift_id = $_REQUEST["shift_id"];
+  $was_cancelled = $_REQUEST["is_cancelled"];
 
-  $success = cdp_submit_cancel_shift($shift_id);
+  $success = cdp_submit_cancel_shift($shift_id, $was_cancelled);
   if (!$success) {
     $result['type'] = "error";
     global $wpdb;
-    $result['error_reason'] = "Could not cancel the shift.";
+    if ($was_cancelled) {
+      $result['error_reason'] = "Could not un-cancel the shift.";
+    } else {
+      $result['error_reason'] = "Could not cancel the shift.";
+    }
     echo json_encode($result);
     die();
   }

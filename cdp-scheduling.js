@@ -166,6 +166,8 @@ jQuery(document).ready( function() {
 
     nonce = jQuery(this).attr("data-nonce")
     shift_id = jQuery(this).attr("data-shift_id")
+    is_cancelled = jQuery(this).attr("data-is_cancelled")
+    gatherer_name = jQuery(this).attr("data-gatherer_name")
 
     jQuery.ajax({
       type: "POST",
@@ -173,13 +175,18 @@ jQuery(document).ready( function() {
       dataType: "json",
       data: {
         action: "cdp_cancel_shift",
+        is_cancelled: is_cancelled,
         shift_id: shift_id,
         nonce: nonce
       },
       success: function(response) {
         if (response.type == "success") {
           let gatherer_id = "#gatherer_".concat(shift_id)
-          jQuery(gatherer_id).html('CANCELLED')
+          if (is_cancelled == "0") {
+            jQuery(gatherer_id).html("<s>".concat(gatherer_name).concat("</s>"))
+          } else {
+            jQuery(gatherer_id).html(gatherer_name)
+          }
         } else {
           console.log(response.error_reason)
           alert(response.error_reason)
