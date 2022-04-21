@@ -61,7 +61,7 @@ function cdp_partition_daily_schedule($today, $schedule, $min_rows = 0) {
   foreach ($schedule as $shift_result) {
     $start_time = cdp_strtotime($shift_result->start_time);
     $interval = date_diff($current_day, $start_time);
-    $days_apart = intval($interval->format('%d'));
+    $days_apart = intval($interval->format('%r%d'));  // %r for negative values
 
     if (array_key_exists($days_apart, $daily_schedule)) {
       $daily_schedule[$days_apart] []= $shift_result;
@@ -87,8 +87,9 @@ function cdp_echo_schedule_html($today, $daily_schedule, $is_future) {
   echo '<table id="' . $table_id . '"  style="table-layout: fixed;" cellspacing="2" cellpadding="4">';
   echo '<tbody>';
   foreach ($daily_schedule as $day_offset => $daily_shifts) {
-    $period_offset = 'P' . $day_offset . 'D';
+    $period_offset = 'P' . abs($day_offset) . 'D';
     $date_offset = new DateInterval($period_offset);
+    $date_offset->invert = $day_offset < 0;
     $shift_day = date_add($current_day, $date_offset);
     $display_day = date_format($shift_day, 'l m/d/Y');
     $db_date_string = date_format($shift_day, 'Y-m-d');
