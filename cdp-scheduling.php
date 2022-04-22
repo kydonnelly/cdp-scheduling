@@ -61,7 +61,13 @@ function cdp_partition_daily_schedule($today, $schedule, $min_rows = 0) {
   foreach ($schedule as $shift_result) {
     $start_time = cdp_strtotime($shift_result->start_time);
     $interval = date_diff($current_day, $start_time);
-    $days_apart = intval($interval->format('%r%d'));  // %r for negative values
+
+    // %r for negative values. $today is midnight this morning
+    //    so any past dates will be off-by-one when counting days.
+    $days_apart = intval($interval->format('%r%d'));
+    if ($interval->invert) {
+      $days_apart -= 1;
+    }
 
     if (array_key_exists($days_apart, $daily_schedule)) {
       $daily_schedule[$days_apart] []= $shift_result;
